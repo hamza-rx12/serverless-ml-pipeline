@@ -1,4 +1,6 @@
 # Custom
+# Lambda function deployment packages
+*.zip
 
 # Terraform
 *.tfstate
