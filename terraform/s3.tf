@@ -3,29 +3,20 @@ resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
 
-# S3 Bucket for triggering Lambda
+# S3 Bucket for image uploads
 resource "aws_s3_bucket" "trigger_bucket" {
-  bucket        = "lambda-trigger-bucket-${random_id.bucket_suffix.hex}"
+  bucket        = "image-analysis-bucket-${random_id.bucket_suffix.hex}"
   force_destroy = true # For testing purposes only
-}
 
-# Lambda Permission (allow S3 to invoke Lambda)
-resource "aws_lambda_permission" "allow_s3" {
-  statement_id  = "AllowExecutionFromS3"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.s3_processor.function_name
-  principal     = "s3.amazonaws.com"
-  source_arn    = aws_s3_bucket.trigger_bucket.arn
-}
-
-# S3 Event Notification
-resource "aws_s3_bucket_notification" "lambda_trigger" {
-  bucket = aws_s3_bucket.trigger_bucket.id
-
-  lambda_function {
-    lambda_function_arn = aws_lambda_function.s3_processor.arn
-    events              = ["s3:ObjectCreated:*"]
+  tags = {
+    Name        = "image-analysis-bucket"
+    Environment = var.environment
+    Project     = var.project_name
   }
+}
 
-  depends_on = [aws_lambda_permission.allow_s3]
+# Enable EventBridge notifications for S3 bucket
+resource "aws_s3_bucket_notification" "eventbridge" {
+  bucket      = aws_s3_bucket.trigger_bucket.id
+  eventbridge = true
 }
