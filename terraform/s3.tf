@@ -20,3 +20,16 @@ resource "aws_s3_bucket_notification" "eventbridge" {
   bucket      = aws_s3_bucket.trigger_bucket.id
   eventbridge = true
 }
+
+# CORS configuration for direct uploads from browser
+resource "aws_s3_bucket_cors_configuration" "trigger_bucket_cors" {
+  bucket = aws_s3_bucket.trigger_bucket.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["PUT", "POST", "GET"]
+    allowed_origins = ["*"] # In production, restrict to your domain
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
+  }
+}
