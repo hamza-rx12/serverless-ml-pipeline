@@ -1,6 +1,6 @@
 import json
 import os
-from urllib.parse import unquote_plus
+from urllib.parse import unquote
 
 # Supported image formats
 SUPPORTED_FORMATS = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
@@ -16,13 +16,17 @@ def handler(event, context):
         # Extract S3 details from event
         # Event can come from EventBridge or direct invocation
         if 'detail' in event:
-            # EventBridge format
+            # EventBridge format (raw)
             bucket = event['detail']['bucket']['name']
-            key = unquote_plus(event['detail']['object']['key'])
+            raw_key = event['detail']['object']['key']
+            key = unquote(raw_key)
+            print(f"EventBridge format - Raw key: {raw_key}, Decoded key: {key}")
         else:
-            # Direct format (for testing)
+            # Transformed format from EventBridge input_transformer or direct invocation
             bucket = event.get('bucket')
-            key = event.get('key')
+            raw_key = event.get('key', '')
+            key = unquote(raw_key) if raw_key else ''
+            print(f"Transformed format - Raw key: {raw_key}, Decoded key: {key}")
 
         if not bucket or not key:
             raise ValueError("Missing bucket or key in event")

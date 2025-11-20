@@ -35,7 +35,7 @@ export const api = {
   // Get analysis results for a specific image
   async getAnalysisResults(imageId) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/results/${imageId}`);
+      const response = await axios.get(`${API_BASE_URL}/results/${encodeURIComponent(imageId)}`);
       return response.data;
     } catch (error) {
       console.error('Error fetching results:', error);

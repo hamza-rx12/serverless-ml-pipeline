@@ -48,10 +48,12 @@ def lambda_handler(event, context):
             }
 
         # Generate unique file name to avoid conflicts
-        file_extension = file_name.split('.')[-1] if '.' in file_name else 'jpg'
+        # Sanitize filename: replace spaces and special chars with underscores
+        safe_file_name = file_name.replace(' ', '_').replace('(', '').replace(')', '')
+        file_extension = safe_file_name.split('.')[-1] if '.' in safe_file_name else 'jpg'
         unique_id = str(uuid.uuid4())[:8]
         timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
-        s3_key = f"{timestamp}-{unique_id}-{file_name}"
+        s3_key = f"{timestamp}-{unique_id}-{safe_file_name}"
 
         # Generate presigned URL
         presigned_url = s3_client.generate_presigned_url(
