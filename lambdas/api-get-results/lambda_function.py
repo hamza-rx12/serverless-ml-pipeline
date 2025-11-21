@@ -6,6 +6,7 @@ from decimal import Decimal
 from urllib.parse import unquote
 
 dynamodb = boto3.resource('dynamodb')
+s3_client = boto3.client('s3')
 
 # Map service prefixes to table names
 SERVICE_TABLES = {
@@ -67,7 +68,8 @@ def lambda_handler(event, context):
         # List recent uploads
         else:
             limit = int(query_parameters.get('limit', 20))
-            return list_recent_uploads(limit, headers)
+            service = query_parameters.get('service')  # NEW: Optional service filter
+            return list_recent_uploads(limit, headers, service)
 
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -122,13 +124,20 @@ def get_image_results(image_id, headers):
         raise
 
 
-def list_recent_uploads(limit, headers):
-    """List recent uploads across all service tables"""
+def list_recent_uploads(limit, headers, service_filter=None):
+    """List recent uploads across all service tables or filtered by service"""
     try:
         all_items = []
 
-        # Query all service tables
-        for service, table_name in SERVICE_TABLES.items():
+        # Determine which services to query
+        services_to_query = SERVICE_TABLES.items()
+        if service_filter and service_filter in SERVICE_TABLES:
+            # Filter to only the requested service
+            services_to_query = [(service_filter, SERVICE_TABLES[service_filter])]
+            print(f"Filtering results for service: {service_filter}")
+
+        # Query service table(s)
+        for service, table_name in services_to_query:
             try:
                 table = dynamodb.Table(table_name)
                 response = table.scan(Limit=limit)
@@ -147,17 +156,37 @@ def list_recent_uploads(limit, headers):
         # Sort by timestamp (most recent first)
         items.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
 
-        # Return summary info for each item
+        # Return summary info for each item with thumbnail URLs
         results = []
         for item in items:
-            results.append({
+            result_item = {
                 'image_id': item.get('image_id'),
                 'timestamp': item.get('timestamp'),
                 'status': item.get('status', 'unknown'),
+                'service': item.get('service'),
                 'bucket': item.get('bucket'),
                 'key': item.get('key'),
                 'analysis_summary': item.get('analysis_summary', {})
-            })
+            }
+
+            # Generate presigned URL for thumbnail if it exists
+            if item.get('key'):
+                thumbnail_key = f"thumbnails/{item.get('key')}"
+                try:
+                    # Check if thumbnail exists and generate presigned URL
+                    result_item['thumbnail_url'] = s3_client.generate_presigned_url(
+                        'get_object',
+                        Params={
+                            'Bucket': item.get('bucket'),
+                            'Key': thumbnail_key
+                        },
+                        ExpiresIn=3600  # 1 hour
+                    )
+                except Exception as e:
+                    # Thumbnail might not exist yet
+                    result_item['thumbnail_url'] = None
+
+            results.append(result_item)
 
         return {
             'statusCode': 200,

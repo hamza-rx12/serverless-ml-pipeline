@@ -46,10 +46,22 @@ function Home() {
 
   return (
     <div className="home-container">
+      <div className="hero-section">
+        <h1 className="hero-title">AI-Powered Image Analysis</h1>
+        <p className="hero-subtitle">
+          Unlock insights from your images with cutting-edge AI technology
+        </p>
+        <div className="hero-features">
+          <span className="hero-feature">⚡ Fast Processing</span>
+          <span className="hero-feature">🎯 High Accuracy</span>
+          <span className="hero-feature">🔒 Secure</span>
+        </div>
+      </div>
+
       <div className="home-content">
-        <h2>Select a Service</h2>
+        <h2 className="services-title">Choose Your Service</h2>
         <p className="home-description">
-          Choose an AI-powered image analysis service to get started
+          Select an AI service to analyze your images
         </p>
 
         <div className="services-grid">

@@ -1,11 +1,11 @@
-# Fixed bucket suffix to maintain existing bucket names
-locals {
-  bucket_suffix = "35541b4f"
+# Random suffix for unique bucket names
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
 }
 
 # S3 Bucket for image uploads
 resource "aws_s3_bucket" "trigger_bucket" {
-  bucket        = "image-analysis-bucket-${local.bucket_suffix}"
+  bucket        = "image-analysis-bucket-${random_id.bucket_suffix.hex}"
   force_destroy = true # For testing purposes only
 
   tags = {

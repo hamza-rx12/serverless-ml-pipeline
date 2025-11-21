@@ -1,6 +1,6 @@
 # S3 bucket for frontend hosting
 resource "aws_s3_bucket" "frontend_bucket" {
-  bucket        = "image-analysis-frontend-${local.bucket_suffix}"
+  bucket        = "image-analysis-frontend-${random_id.bucket_suffix.hex}"
   force_destroy = true
 
   tags = {

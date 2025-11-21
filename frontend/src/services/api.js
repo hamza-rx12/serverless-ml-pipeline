@@ -45,11 +45,13 @@ export const api = {
   },
 
   // List recent uploads
-  async listRecentUploads(limit = 20) {
+  async listRecentUploads(limit = 20, service = null) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/results`, {
-        params: { limit }
-      });
+      const params = { limit };
+      if (service) {
+        params.service = service;  // Add service filter if provided
+      }
+      const response = await axios.get(`${API_BASE_URL}/results`, { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching recent uploads:', error);
