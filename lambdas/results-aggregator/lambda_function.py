@@ -60,9 +60,9 @@ def handler(event, context):
         # Extract individual detection results
         # Check if using service-specific workflow or parallel workflow
         if text_results or face_results or object_results:
-            # Service-specific workflow
-            objects_result = object_results.get('objects', {}) if object_results else {}
-            faces_result = face_results.get('faces', {}) if face_results else {}
+            # Service-specific workflow - use full result dicts
+            objects_result = object_results if object_results else {}
+            faces_result = face_results if face_results else {}
             text_result = text_results.get('text', {}) if text_results else {}
             moderation_result = {}
         else:

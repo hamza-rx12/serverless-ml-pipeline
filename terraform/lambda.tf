@@ -67,29 +67,6 @@ resource "aws_lambda_function" "face_detector" {
   }
 }
 
-# Content Moderator Lambda
-data "archive_file" "content_moderator_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/../lambdas/content-moderator/"
-  output_path = "${path.module}/content-moderator.zip"
-}
-
-resource "aws_lambda_function" "content_moderator" {
-  filename         = data.archive_file.content_moderator_zip.output_path
-  function_name    = "image-analysis-content-moderator"
-  role             = aws_iam_role.lambda_role.arn
-  handler          = "lambda_function.handler"
-  runtime          = "python3.11"
-  source_code_hash = data.archive_file.content_moderator_zip.output_base64sha256
-  memory_size      = var.lambda_memory_size
-  timeout          = var.lambda_timeout
-
-  tags = {
-    Name        = "content-moderator"
-    Environment = var.environment
-  }
-}
-
 # Results Aggregator Lambda
 data "archive_file" "results_aggregator_zip" {
   type        = "zip"
@@ -109,7 +86,9 @@ resource "aws_lambda_function" "results_aggregator" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE = aws_dynamodb_table.image_analysis_results.name
+      TEXT_DETECTION_TABLE   = aws_dynamodb_table.text_detection_results.name
+      FACE_DETECTION_TABLE   = aws_dynamodb_table.face_detection_results.name
+      OBJECT_DETECTION_TABLE = aws_dynamodb_table.object_detection_results.name
     }
   }
 

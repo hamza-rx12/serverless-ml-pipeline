@@ -139,6 +139,32 @@ function ResultsDisplay({ imageId }) {
     );
   };
 
+  const renderText = () => {
+    const textData = results?.detection_results?.text;
+    if (!textData || !textData.lines?.length) return null;
+
+    return (
+      <div className="results-section">
+        <h3>Text Detected ({textData.line_count || 0} lines, {textData.word_count || 0} words)</h3>
+        <div className="text-results">
+          <div className="full-text">
+            <h4>Full Text:</h4>
+            <p className="detected-text">{textData.full_text || 'No text detected'}</p>
+          </div>
+          <div className="text-lines">
+            <h4>Detected Lines:</h4>
+            {textData.lines.map((line, idx) => (
+              <div key={idx} className="text-line">
+                <span className="line-text">{line.text}</span>
+                <span className="line-confidence">{line.confidence.toFixed(1)}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderModeration = () => {
     const isSafe = results?.analysis_summary?.is_safe;
     const moderationLabels = results?.detection_results?.moderation || [];
@@ -214,9 +240,20 @@ function ResultsDisplay({ imageId }) {
 
           {results.status === 'completed' && (
             <>
-              {renderModeration()}
-              {renderObjects()}
-              {renderFaces()}
+              {/* Render service-specific results */}
+              {results.service === 'text-detection' && renderText()}
+              {results.service === 'face-detection' && renderFaces()}
+              {results.service === 'object-detection' && renderObjects()}
+
+              {/* For backward compatibility - show all if no service specified */}
+              {!results.service && (
+                <>
+                  {renderModeration()}
+                  {renderObjects()}
+                  {renderFaces()}
+                  {renderText()}
+                </>
+              )}
             </>
           )}
 

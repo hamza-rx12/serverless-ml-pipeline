@@ -83,8 +83,6 @@ resource "aws_iam_role_policy" "api_lambda_dynamodb_policy" {
           "dynamodb:Scan"
         ]
         Resource = [
-          aws_dynamodb_table.image_analysis_results.arn,
-          "${aws_dynamodb_table.image_analysis_results.arn}/*",
           aws_dynamodb_table.text_detection_results.arn,
           "${aws_dynamodb_table.text_detection_results.arn}/*",
           aws_dynamodb_table.face_detection_results.arn,
