@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { api } from '../services/api';
 import './ImageUpload.css';
 
-function ImageUpload({ onUploadSuccess }) {
+function ImageUpload({ onUploadSuccess, service = 'object-detection' }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -48,10 +48,11 @@ function ImageUpload({ onUploadSuccess }) {
     setError('');
 
     try {
-      // Step 1: Get presigned URL
+      // Step 1: Get presigned URL with service parameter
       const { uploadUrl, imageId } = await api.getPresignedUrl(
         selectedFile.name,
-        selectedFile.type
+        selectedFile.type,
+        service  // Pass service to API
       );
 
       // Step 2: Upload to S3
