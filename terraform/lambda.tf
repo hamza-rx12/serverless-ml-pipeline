@@ -118,3 +118,26 @@ resource "aws_lambda_function" "results_aggregator" {
     Environment = var.environment
   }
 }
+
+# Text Detector Lambda
+data "archive_file" "text_detector_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/../lambdas/text-detector/"
+  output_path = "${path.module}/text-detector.zip"
+}
+
+resource "aws_lambda_function" "text_detector" {
+  filename         = data.archive_file.text_detector_zip.output_path
+  function_name    = "image-analysis-text-detector"
+  role             = aws_iam_role.lambda_role.arn
+  handler          = "lambda_function.handler"
+  runtime          = "python3.11"
+  source_code_hash = data.archive_file.text_detector_zip.output_base64sha256
+  memory_size      = var.lambda_memory_size
+  timeout          = var.lambda_timeout
+
+  tags = {
+    Name        = "text-detector"
+    Environment = var.environment
+  }
+}

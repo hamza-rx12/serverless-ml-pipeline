@@ -5,8 +5,21 @@ from boto3.dynamodb.conditions import Key
 from decimal import Decimal
 
 dynamodb = boto3.resource('dynamodb')
-table_name = os.environ.get('DYNAMODB_TABLE_NAME')
-table = dynamodb.Table(table_name)
+
+# Map service prefixes to table names
+SERVICE_TABLES = {
+    'text-detection': os.environ.get('TEXT_DETECTION_TABLE', 'text-detection-results'),
+    'face-detection': os.environ.get('FACE_DETECTION_TABLE', 'face-detection-results'),
+    'object-detection': os.environ.get('OBJECT_DETECTION_TABLE', 'object-detection-results')
+}
+
+def get_table_for_image(image_id):
+    """Determine which table to query based on image_id prefix"""
+    for service, table_name in SERVICE_TABLES.items():
+        if image_id.startswith(f"{service}/"):
+            return dynamodb.Table(table_name), service
+    # Default to object-detection for backward compatibility
+    return dynamodb.Table(SERVICE_TABLES['object-detection']), 'object-detection'
 
 class DecimalEncoder(json.JSONEncoder):
     """Helper class to convert Decimal objects to float for JSON serialization"""
@@ -67,6 +80,10 @@ def lambda_handler(event, context):
 def get_image_results(image_id, headers):
     """Get results for a specific image"""
     try:
+        # Determine which table to query based on image_id prefix
+        table, service = get_table_for_image(image_id)
+        print(f"Querying {service} table for image_id: {image_id}")
+
         # Query by image_id (partition key)
         # Get the most recent result for this image
         response = table.query(
@@ -82,6 +99,7 @@ def get_image_results(image_id, headers):
                 'headers': headers,
                 'body': json.dumps({
                     'image_id': image_id,
+                    'service': service,
                     'status': 'processing',
                     'message': 'Analysis in progress'
                 }, cls=DecimalEncoder)
@@ -101,15 +119,26 @@ def get_image_results(image_id, headers):
 
 
 def list_recent_uploads(limit, headers):
-    """List recent uploads (scan table)"""
+    """List recent uploads across all service tables"""
     try:
-        # Scan the table to get recent items
-        # Note: In production, you might want to use a GSI with timestamp as partition key
-        response = table.scan(
-            Limit=limit
-        )
+        all_items = []
 
-        items = response.get('Items', [])
+        # Query all service tables
+        for service, table_name in SERVICE_TABLES.items():
+            try:
+                table = dynamodb.Table(table_name)
+                response = table.scan(Limit=limit)
+                items = response.get('Items', [])
+                # Add service info to each item
+                for item in items:
+                    item['service'] = service
+                all_items.extend(items)
+            except Exception as e:
+                print(f"Error scanning {service} table: {str(e)}")
+                # Continue with other tables even if one fails
+                continue
+
+        items = all_items
 
         # Sort by timestamp (most recent first)
         items.sort(key=lambda x: x.get('timestamp', ''), reverse=True)

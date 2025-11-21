@@ -18,6 +18,7 @@ def lambda_handler(event, context):
         body = json.loads(event.get('body', '{}'))
         file_name = body.get('fileName')
         file_type = body.get('fileType')
+        service = body.get('service', 'object-detection')  # Default to object-detection for backward compatibility
 
         if not file_name or not file_type:
             return {
@@ -29,6 +30,21 @@ def lambda_handler(event, context):
                 },
                 'body': json.dumps({
                     'error': 'fileName and fileType are required'
+                })
+            }
+
+        # Validate service name
+        valid_services = ['text-detection', 'face-detection', 'object-detection']
+        if service not in valid_services:
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': 'Content-Type',
+                    'Access-Control-Allow-Methods': 'POST,OPTIONS'
+                },
+                'body': json.dumps({
+                    'error': f'Invalid service. Must be one of: {", ".join(valid_services)}'
                 })
             }
 
@@ -53,7 +69,11 @@ def lambda_handler(event, context):
         file_extension = safe_file_name.split('.')[-1] if '.' in safe_file_name else 'jpg'
         unique_id = str(uuid.uuid4())[:8]
         timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
-        s3_key = f"{timestamp}-{unique_id}-{safe_file_name}"
+
+        # Add service prefix to S3 key for routing
+        s3_key = f"{service}/{timestamp}-{unique_id}-{safe_file_name}"
+
+        print(f"Generated S3 key for {service}: {s3_key}")
 
         # Generate presigned URL
         presigned_url = s3_client.generate_presigned_url(
@@ -76,6 +96,7 @@ def lambda_handler(event, context):
             'body': json.dumps({
                 'uploadUrl': presigned_url,
                 'imageId': s3_key,
+                'service': service,
                 'expiresIn': UPLOAD_EXPIRATION
             })
         }
