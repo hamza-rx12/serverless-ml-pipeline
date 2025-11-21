@@ -57,7 +57,8 @@ resource "aws_iam_policy" "lambda_rekognition" {
         Action = [
           "rekognition:DetectLabels",
           "rekognition:DetectFaces",
-          "rekognition:DetectModerationLabels"
+          "rekognition:DetectModerationLabels",
+          "rekognition:DetectText"
         ]
         Resource = "*"
       }
@@ -85,7 +86,12 @@ resource "aws_iam_policy" "lambda_dynamodb" {
           "dynamodb:UpdateItem",
           "dynamodb:GetItem"
         ]
-        Resource = aws_dynamodb_table.image_analysis_results.arn
+        Resource = [
+          aws_dynamodb_table.image_analysis_results.arn,
+          aws_dynamodb_table.text_detection_results.arn,
+          aws_dynamodb_table.face_detection_results.arn,
+          aws_dynamodb_table.object_detection_results.arn
+        ]
       }
     ]
   })
