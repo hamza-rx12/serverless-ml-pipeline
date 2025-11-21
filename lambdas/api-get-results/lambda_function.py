@@ -3,6 +3,7 @@ import boto3
 import os
 from boto3.dynamodb.conditions import Key
 from decimal import Decimal
+from urllib.parse import unquote
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -15,11 +16,14 @@ SERVICE_TABLES = {
 
 def get_table_for_image(image_id):
     """Determine which table to query based on image_id prefix"""
+    # Decode URL-encoded imageId (e.g., text-detection%2F -> text-detection/)
+    decoded_image_id = unquote(image_id)
+
     for service, table_name in SERVICE_TABLES.items():
-        if image_id.startswith(f"{service}/"):
-            return dynamodb.Table(table_name), service
+        if decoded_image_id.startswith(f"{service}/"):
+            return dynamodb.Table(table_name), service, decoded_image_id
     # Default to object-detection for backward compatibility
-    return dynamodb.Table(SERVICE_TABLES['object-detection']), 'object-detection'
+    return dynamodb.Table(SERVICE_TABLES['object-detection']), 'object-detection', decoded_image_id
 
 class DecimalEncoder(json.JSONEncoder):
     """Helper class to convert Decimal objects to float for JSON serialization"""
@@ -81,13 +85,13 @@ def get_image_results(image_id, headers):
     """Get results for a specific image"""
     try:
         # Determine which table to query based on image_id prefix
-        table, service = get_table_for_image(image_id)
-        print(f"Querying {service} table for image_id: {image_id}")
+        table, service, decoded_image_id = get_table_for_image(image_id)
+        print(f"Querying {service} table for image_id: {decoded_image_id}")
 
-        # Query by image_id (partition key)
+        # Query by image_id (partition key) using DECODED imageId
         # Get the most recent result for this image
         response = table.query(
-            KeyConditionExpression=Key('image_id').eq(image_id),
+            KeyConditionExpression=Key('image_id').eq(decoded_image_id),
             ScanIndexForward=False,  # Sort by timestamp descending
             Limit=1
         )
