@@ -15,6 +15,11 @@ __pycache__/
 # C extensions
 *.so
 
+# Exception: Allow Lambda dependencies (Pillow .so files are critical)
+!lambdas/thumbnail-generator/**/*.so
+!lambdas/thumbnail-generator/**/*.dist-info/**
+!lambdas/thumbnail-generator/**/Pillow.libs/**
+
 # Distribution / packaging
 .Python
 build/
