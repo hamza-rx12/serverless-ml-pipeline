@@ -4,7 +4,7 @@
 data "archive_file" "thumbnail_generator_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../lambdas/thumbnail-generator"
-  output_path = "${path.module}/../lambdas/thumbnail-generator.zip"
+  output_path = "${path.module}/../build/thumbnail-generator.zip"
   excludes    = ["__pycache__", "*.pyc"]
 }
 

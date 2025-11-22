@@ -2,7 +2,7 @@
 data "archive_file" "orchestrator_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../lambdas/orchestrator/"
-  output_path = "${path.module}/orchestrator.zip"
+  output_path = "${path.module}/../build/orchestrator.zip"
 }
 
 resource "aws_lambda_function" "orchestrator" {
@@ -25,7 +25,7 @@ resource "aws_lambda_function" "orchestrator" {
 data "archive_file" "object_detector_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../lambdas/object-detector/"
-  output_path = "${path.module}/object-detector.zip"
+  output_path = "${path.module}/../build/object-detector.zip"
 }
 
 resource "aws_lambda_function" "object_detector" {
@@ -48,7 +48,7 @@ resource "aws_lambda_function" "object_detector" {
 data "archive_file" "face_detector_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../lambdas/face-detector/"
-  output_path = "${path.module}/face-detector.zip"
+  output_path = "${path.module}/../build/face-detector.zip"
 }
 
 resource "aws_lambda_function" "face_detector" {
@@ -71,7 +71,7 @@ resource "aws_lambda_function" "face_detector" {
 data "archive_file" "results_aggregator_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../lambdas/results-aggregator/"
-  output_path = "${path.module}/results-aggregator.zip"
+  output_path = "${path.module}/../build/results-aggregator.zip"
 }
 
 resource "aws_lambda_function" "results_aggregator" {
@@ -102,7 +102,7 @@ resource "aws_lambda_function" "results_aggregator" {
 data "archive_file" "text_detector_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../lambdas/text-detector/"
-  output_path = "${path.module}/text-detector.zip"
+  output_path = "${path.module}/../build/text-detector.zip"
 }
 
 resource "aws_lambda_function" "text_detector" {

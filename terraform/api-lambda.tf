@@ -2,7 +2,7 @@
 data "archive_file" "api_upload_url_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../lambdas/api-upload-url"
-  output_path = "${path.module}/api-upload-url.zip"
+  output_path = "${path.module}/../build/api-upload-url.zip"
 }
 
 resource "aws_lambda_function" "api_upload_url" {
@@ -32,7 +32,7 @@ resource "aws_lambda_function" "api_upload_url" {
 data "archive_file" "api_get_results_zip" {
   type        = "zip"
   source_dir  = "${path.module}/../lambdas/api-get-results"
-  output_path = "${path.module}/api-get-results.zip"
+  output_path = "${path.module}/../build/api-get-results.zip"
 }
 
 resource "aws_lambda_function" "api_get_results" {

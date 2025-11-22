@@ -84,9 +84,9 @@ deploy: check-deps deploy-backend deploy-frontend ## Full deployment - backend +
 	@printf "$(GREEN)✓ Complete deployment finished successfully!$(NC)\n"
 	@printf "$(GREEN)═══════════════════════════════════════════════$(NC)\n"
 	@printf "\n"
-	@printf "$(BLUE)Your application is available at:$(NC)\n"
-	@cd $(TERRAFORM_DIR) && terraform output -raw cloudfront_url 2>/dev/null || printf "Run 'terraform output cloudfront_url' to get URL\n"
-	@printf "\n"
+#	@printf "$(BLUE)Your application is available at:$(NC)\n"
+#	@cd $(TERRAFORM_DIR) && terraform output -raw cloudfront_url 2>/dev/null || printf "Run 'terraform output cloudfront_url' to get URL\n"
+#	@printf "\n"
 
 all: deploy ## Alias for 'deploy' - complete build and deployment
 
@@ -97,9 +97,9 @@ clean-frontend: ## Clean frontend build artifacts
 	rm -f $(FRONTEND_DIR)/.env
 	@printf "$(GREEN)✓ Frontend cleaned$(NC)\n"
 
-clean-terraform: ## Clean Terraform files and zips
+clean-terraform: ## Clean Terraform files and build directory
 	@printf "$(BLUE)Cleaning Terraform artifacts...$(NC)\n"
-	rm -f $(TERRAFORM_DIR)/*.zip
+	rm -rf build
 	rm -rf $(TERRAFORM_DIR)/.terraform
 	rm -f $(TERRAFORM_DIR)/.terraform.lock.hcl
 	@printf "$(GREEN)✓ Terraform artifacts cleaned$(NC)\n"
