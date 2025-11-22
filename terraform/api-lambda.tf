@@ -47,7 +47,9 @@ resource "aws_lambda_function" "api_get_results" {
 
   environment {
     variables = {
-      DYNAMODB_TABLE_NAME = aws_dynamodb_table.image_analysis_results.name
+      TEXT_DETECTION_TABLE   = aws_dynamodb_table.text_detection_results.name
+      FACE_DETECTION_TABLE   = aws_dynamodb_table.face_detection_results.name
+      OBJECT_DETECTION_TABLE = aws_dynamodb_table.object_detection_results.name
     }
   }
 

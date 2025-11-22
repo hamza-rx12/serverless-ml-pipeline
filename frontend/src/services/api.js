@@ -5,11 +5,12 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000
 
 export const api = {
   // Get presigned URL for S3 upload
-  async getPresignedUrl(fileName, fileType) {
+  async getPresignedUrl(fileName, fileType, service = 'object-detection') {
     try {
       const response = await axios.post(`${API_BASE_URL}/upload-url`, {
         fileName,
-        fileType
+        fileType,
+        service  // NEW: Service parameter for routing
       });
       return response.data;
     } catch (error) {
@@ -44,11 +45,13 @@ export const api = {
   },
 
   // List recent uploads
-  async listRecentUploads(limit = 20) {
+  async listRecentUploads(limit = 20, service = null) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/results`, {
-        params: { limit }
-      });
+      const params = { limit };
+      if (service) {
+        params.service = service;  // Add service filter if provided
+      }
+      const response = await axios.get(`${API_BASE_URL}/results`, { params });
       return response.data;
     } catch (error) {
       console.error('Error fetching recent uploads:', error);

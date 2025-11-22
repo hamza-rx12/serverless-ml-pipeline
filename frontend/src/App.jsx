@@ -1,38 +1,33 @@
-import { useState } from 'react'
-import ImageUpload from './components/ImageUpload'
-import ResultsDisplay from './components/ResultsDisplay'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Home from './pages/Home'
+import TextDetectionPage from './pages/TextDetection/TextDetectionPage'
+import FaceDetectionPage from './pages/FaceDetection/FaceDetectionPage'
+import ObjectDetectionPage from './pages/ObjectDetection/ObjectDetectionPage'
 import './App.css'
 
 function App() {
-  const [uploadedImageId, setUploadedImageId] = useState(null)
-
-  const handleUploadSuccess = (imageId) => {
-    setUploadedImageId(imageId)
-  }
-
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1>AWS Image Analysis</h1>
-        <p className="subtitle">AI-powered image analysis using AWS Rekognition</p>
-      </header>
+    <BrowserRouter>
+      <div className="app">
+        <header className="app-header">
+          <h1>AWS Image Analysis Platform</h1>
+          <p className="subtitle">Choose a service to analyze your images</p>
+        </header>
 
-      <main className="app-main">
-        <div className="app-grid">
-          <div className="upload-section">
-            <ImageUpload onUploadSuccess={handleUploadSuccess} />
-          </div>
+        <main className="app-main">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/text-detection" element={<TextDetectionPage />} />
+            <Route path="/face-detection" element={<FaceDetectionPage />} />
+            <Route path="/object-detection" element={<ObjectDetectionPage />} />
+          </Routes>
+        </main>
 
-          <div className="results-section">
-            <ResultsDisplay imageId={uploadedImageId} />
-          </div>
-        </div>
-      </main>
-
-      <footer className="app-footer">
-        <p>Powered by AWS Lambda, Step Functions, Rekognition & DynamoDB</p>
-      </footer>
-    </div>
+        <footer className="app-footer">
+          <p>Powered by AWS Lambda, Step Functions, Rekognition & DynamoDB</p>
+        </footer>
+      </div>
+    </BrowserRouter>
   )
 }
 

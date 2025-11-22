@@ -57,7 +57,8 @@ resource "aws_iam_policy" "lambda_rekognition" {
         Action = [
           "rekognition:DetectLabels",
           "rekognition:DetectFaces",
-          "rekognition:DetectModerationLabels"
+          "rekognition:DetectModerationLabels",
+          "rekognition:DetectText"
         ]
         Resource = "*"
       }
@@ -85,7 +86,11 @@ resource "aws_iam_policy" "lambda_dynamodb" {
           "dynamodb:UpdateItem",
           "dynamodb:GetItem"
         ]
-        Resource = aws_dynamodb_table.image_analysis_results.arn
+        Resource = [
+          aws_dynamodb_table.text_detection_results.arn,
+          aws_dynamodb_table.face_detection_results.arn,
+          aws_dynamodb_table.object_detection_results.arn
+        ]
       }
     ]
   })
@@ -129,7 +134,7 @@ resource "aws_iam_policy" "step_functions_lambda" {
           aws_lambda_function.orchestrator.arn,
           aws_lambda_function.object_detector.arn,
           aws_lambda_function.face_detector.arn,
-          aws_lambda_function.content_moderator.arn,
+          aws_lambda_function.text_detector.arn,
           aws_lambda_function.results_aggregator.arn
         ]
       }
@@ -171,7 +176,11 @@ resource "aws_iam_policy" "eventbridge_step_functions" {
         Action = [
           "states:StartExecution"
         ]
-        Resource = aws_sfn_state_machine.image_analysis.arn
+        Resource = [
+          aws_sfn_state_machine.text_detection.arn,
+          aws_sfn_state_machine.face_detection.arn,
+          aws_sfn_state_machine.object_detection.arn
+        ]
       }
     ]
   })

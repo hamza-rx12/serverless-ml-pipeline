@@ -1,4 +1,4 @@
-# Generate random suffix for unique bucket name
+# Random suffix for unique bucket names
 resource "random_id" "bucket_suffix" {
   byte_length = 4
 }
